@@ -15,6 +15,7 @@ public class Train extends Thread {
 	static Semaphore lowerMainTrack = new Semaphore(0, true);
 	static Semaphore sharedUpper = new Semaphore(1,true);
 	static Semaphore upperMainTrack = new Semaphore(0, true);
+	static Semaphore crossing = new Semaphore(1,true);
 
 
 
@@ -46,6 +47,22 @@ public class Train extends Thread {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+		contains the big switch which it enters only when a sensor is activated. 
+
+		**************
+		FIX THIS:
+		fix sharedDual semaphore, releases too many times
+		make it more dynamic (for different velocities)
+
+		**************
+		known bugs:
+		while running at speeds 10 23, sharedDual was acquired twice (twice as many
+		times as it should).
+
+
+	*/
 
 	public void run() {
 		tsi = TSimInterface.getInstance();
@@ -80,6 +97,19 @@ public class Train extends Thread {
 							break;
 
 						case 6:
+							if(up) {
+								crossing.release();
+							}
+							else {
+								if(!crossing.tryAcquire()) {
+									tsi.setSpeed(this.id,0);
+									crossing.acquire();
+									tsi.setSpeed(this.id, this.speed);
+								}
+							} 
+							break;
+
+						case 7:
 							if(up){
 								if(sharedLower.tryAcquire()) {
 									if(y == 11){
@@ -150,9 +180,16 @@ public class Train extends Thread {
 						case 13: 
 							if(up) {
 								sharedUpper.release();
-								System.out.println("Released!");
+
+								if(!crossing.tryAcquire()) {
+									System.out.println("Released!");
+									tsi.setSpeed(this.id,0);
+									crossing.acquire();
+									tsi.setSpeed(this.id, this.speed);
+								}
 							}
 							else {
+								crossing.release();
 								if(sharedUpper.tryAcquire()) {
 									if(y == 7) {
 										tsi.setSwitch(17,7,tsi.SWITCH_RIGHT);
