@@ -16,7 +16,7 @@ public class Train extends Thread {
 	static Semaphore sharedUpper = new Semaphore(1,true);
 	static Semaphore upperMainTrack = new Semaphore(0, true);
 	static Semaphore crossing = new Semaphore(1,true);
-
+	static int count;
 
 
 	public Train(int id, int speed, boolean up) {
@@ -33,14 +33,12 @@ public class Train extends Thread {
 	}
 
 	public void boardStation(int id) {
-		System.out.println("Boarding");
 		up = !up;
 		speed = -speed;
 		try {
 			tsi.setSpeed(id, 0);
 			sleep(2000);
 			tsi.setSpeed(id, speed);
-			System.out.println(speed);
 		}catch(InterruptedException e) {
 			e.printStackTrace();
 		}catch(CommandException e) {
@@ -60,9 +58,30 @@ public class Train extends Thread {
 		known bugs:
 		while running at speeds 10 23, sharedDual was acquired twice (twice as many
 		times as it should).
-
-
 	*/
+
+	public void tryGo() {
+
+	}
+
+	public void wait(Semaphore s, int switchX, int switchY, int trainY, int leftY) {
+		try {
+			tsi.setSpeed(id, 0);
+			s.acquire();
+			tsi.setSpeed(id, speed);
+
+			if(leftY != 0) {
+				if(trainY == leftY)
+					tsi.setSwitch(switchX, switchY, tsi.SWITCH_LEFT);
+				else
+					tsi.setSwitch(switchX, switchY, tsi.SWITCH_RIGHT);		
+			}
+		}catch(InterruptedException e) {
+			e.printStackTrace();
+		}catch(CommandException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void run() {
 		tsi = TSimInterface.getInstance();
@@ -102,14 +121,12 @@ public class Train extends Thread {
 							}
 							else {
 								if(!crossing.tryAcquire()) {
-									tsi.setSpeed(this.id,0);
-									crossing.acquire();
-									tsi.setSpeed(this.id, this.speed);
+									wait(crossing, 0,0, y, 0);
 								}
 							} 
 							break;
 
-						case 7:
+						case 5:
 							if(up){
 								if(sharedLower.tryAcquire()) {
 									if(y == 11){
@@ -119,6 +136,10 @@ public class Train extends Thread {
 									else
 										tsi.setSwitch(3,11,tsi.SWITCH_RIGHT);
 								}
+
+
+
+
 								else {
 									tsi.setSpeed(this.id, 0);
 									sharedLower.acquire();
@@ -131,7 +152,7 @@ public class Train extends Thread {
 										tsi.setSwitch(3,11,tsi.SWITCH_RIGHT);
 								}
 							}
-							else if(!up && ((y == 11) || (y == 13))) {
+							else if((y == 11) || (y == 13)) {
 								sharedLower.release();
 							}
 							break;
@@ -140,32 +161,45 @@ public class Train extends Thread {
 							if(up) {
 								sharedLower.release();
 								if(sharedUpper.tryAcquire()) {
-									if(y == 9)
-										tsi.setSwitch(15,9,tsi.SWITCH_RIGHT);
-									else
+									if(y == 10)
 										tsi.setSwitch(15,9,tsi.SWITCH_LEFT);
+									else
+										tsi.setSwitch(15,9,tsi.SWITCH_RIGHT);
 								}
+
+
+
+
 								else {
 									tsi.setSpeed(this.id, 0);
 									sharedUpper.acquire();
-									if(y == 9)
-										tsi.setSwitch(15,9,tsi.SWITCH_RIGHT);
-									else
+									if(y == 10)
 										tsi.setSwitch(15,9,tsi.SWITCH_LEFT);
+									else
+										tsi.setSwitch(15,9,tsi.SWITCH_RIGHT);
 									tsi.setSpeed(this.id, speed);
 								}
+
+
+
+
+
 							}
 							else {
 								sharedUpper.release();
-								System.out.println("Released!");
 								if(sharedLower.tryAcquire()) {
 									if(y == 9)
 										tsi.setSwitch(4, 9, tsi.SWITCH_LEFT);
 									else
 										tsi.setSwitch(4, 9, tsi.SWITCH_RIGHT);
 								}
+
+
+
+
+
 								else {
-									System.out.println("nope");
+
 									tsi.setSpeed(this.id, 0);
 									sharedLower.acquire();
 									tsi.setSpeed(this.id, this.speed);
@@ -175,6 +209,22 @@ public class Train extends Thread {
 										tsi.setSwitch(4, 9, tsi.SWITCH_RIGHT);
 								}
 							}
+
+
+
+
+							break;
+
+						case 10:
+							if(up) {
+								System.out.println("japp");
+								crossing.release();
+							}
+							else {
+								if(!crossing.tryAcquire()) {
+									wait(crossing, 0,0, y, 0);
+								}
+							}
 							break;
 
 						case 13: 
@@ -182,8 +232,7 @@ public class Train extends Thread {
 								sharedUpper.release();
 
 								if(!crossing.tryAcquire()) {
-									System.out.println("Released!");
-									tsi.setSpeed(this.id,0);
+									tsi.setSpeed(this.id, 0);
 									crossing.acquire();
 									tsi.setSpeed(this.id, this.speed);
 								}
@@ -191,23 +240,32 @@ public class Train extends Thread {
 							else {
 								crossing.release();
 								if(sharedUpper.tryAcquire()) {
-									if(y == 7) {
+									if(y == 8) {
+										tsi.setSwitch(17,7,tsi.SWITCH_LEFT);
+									}
+									else {
 										tsi.setSwitch(17,7,tsi.SWITCH_RIGHT);
 										upperMainTrack.release();
+										count++;
+										System.out.println(count);
+									
 									}
-									else
-										tsi.setSwitch(17,7,tsi.SWITCH_LEFT);
 								}
+
 								else {
+									crossing.release();
 									tsi.setSpeed(this.id, 0);
 									sharedUpper.acquire();
 									tsi.setSpeed(this.id, this.speed);
-									if(y == 7) {
+									if(y == 8) {
+										tsi.setSwitch(17,7,tsi.SWITCH_LEFT);
+									}
+									else {
 										tsi.setSwitch(17,7,tsi.SWITCH_RIGHT);
 										upperMainTrack.release();
+										count++;
+										System.out.println(count);
 									}
-									else
-										tsi.setSwitch(17,7,tsi.SWITCH_LEFT);
 								}
 							}
 							break;
@@ -223,8 +281,11 @@ public class Train extends Thread {
 
 						case 19:
 							if(up){
-								sharedDual.release();								
+								sharedDual.release();	
+								System.out.println(count);
+							
 								if(upperMainTrack.tryAcquire()) {
+									count--;
 									tsi.setSwitch(17,7,tsi.SWITCH_RIGHT);
 								}
 								
