@@ -188,13 +188,23 @@ public class Train extends Thread {
 							}	 
 							break;
 
-						case 10:
-							if(up) {
+						case 9:
+							if(!up) {
 								crossing.release();
 							}
-							else {
-								if(!crossing.tryAcquire()) {
+							break;
+
+						case 10:
+							if(y == 5) {
+								if(up)
+									crossing.release();
+								else if(!crossing.tryAcquire()) {
 									wait(crossing);
+								}
+							}
+							else {
+								if(!up) {
+									crossing.release();
 								}
 							}
 							break;
@@ -222,7 +232,6 @@ public class Train extends Thread {
 								}
 							}
 							else {
-									crossing.release();
 									waitAndSwitch(sharedUpper, 17,7, y==8, upperMainTrack, false);
 							}
 							break;
@@ -247,6 +256,22 @@ public class Train extends Thread {
 							}
 							break;
 					}
+				}
+
+				if(sharedUpper.availablePermits() > 1 ||
+				 sharedDual.availablePermits() > 1 ||
+				  sharedLower.availablePermits() > 1 || 
+				  lowerMainTrack.availablePermits() > 1 || 
+				  upperMainTrack.availablePermits() > 1 || 
+				  crossing.availablePermits() > 1){
+					System.out.println("sharedupper: " + sharedUpper.availablePermits());
+				System.out.println("sharedLower: " + sharedLower.availablePermits());
+				System.out.println("sharedDual: " + sharedDual.availablePermits());
+				System.out.println("lowerMainTrack: " + lowerMainTrack.availablePermits());
+				System.out.println("upperMainTrack: " + upperMainTrack.availablePermits());
+				System.out.println("crossing: " + crossing.availablePermits());
+				Thread.sleep(10000);
+					System.exit(1);
 				}
 			}catch(CommandException e) {
 				e.printStackTrace();
