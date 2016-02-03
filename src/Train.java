@@ -257,20 +257,3 @@ public class Train extends Thread {
 		}
 	}
 }	
-
-				/*
-				if(sharedUpper.availablePermits() > 1 ||
-				 sharedDual.availablePermits() > 1 ||
-				  sharedLower.availablePermits() > 1 || 
-				  lowerMainTrack.availablePermits() > 1 || 
-				  upperMainTrack.availablePermits() > 1 || 
-				  crossing.availablePermits() > 1){
-					System.out.println("sharedupper: " + sharedUpper.availablePermits());
-				System.out.println("sharedLower: " + sharedLower.availablePermits());
-				System.out.println("sharedDual: " + sharedDual.availablePermits());
-				System.out.println("lowerMainTrack: " + lowerMainTrack.availablePermits());
-				System.out.println("upperMainTrack: " + upperMainTrack.availablePermits());
-				System.out.println("crossing: " + crossing.availablePermits());
-					System.exit(1);
-				}
-				*/
