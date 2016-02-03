@@ -17,13 +17,20 @@ our shared tracks and collide with each other.
 
 Choice of critical sections
 * The two joined sections after each station were our main priority.
-This because only one train can be there on any given time. 
+Only one train can be there on a given time, thus sharedUpper and 
+sharedLower became our first semaphores. They work like an entrance 
+red light to the just mentioned sections. Those sections also contains
+a couple of sensors, one in each section, that works the switches
+connected to the to-be-entered sections. 
+
+Another critical section is the crossing section right before the 
+upper station. We had to be very precise in the placement of sensors.
+You want to have some margin but not lose out in the train flow. 
 
 Maximum train speed and the reason for it
-* Our maximum speed is 26 because 27 is to fast for the trains to
+* Our maximum speed is 22 because 23 is to fast for the trains to
 stop before we reach the switch. And therefore we choose 26 otherwise
 we would have a collision.
-
 How you tested your solution
 * We printed our available permits for each semaphore to ensure that we
 never released one too many permits. And we also created a statement
