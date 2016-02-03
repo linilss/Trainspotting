@@ -25,7 +25,9 @@ connected to the to-be-entered sections.
 
 Another critical section is the crossing section right before the 
 upper station. We had to be very precise in the placement of sensors.
-You want to have some margin but not lose out in the train flow. 
+You want to have some margin but not lose out in the train flow.
+
+
 
 Maximum train speed and the reason for it
 * Our maximum speed is 22 because 23 is to fast for the trains to
