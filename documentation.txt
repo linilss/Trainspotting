@@ -1,4 +1,13 @@
-Beskriv program helvetet :)
+The program work as such that all semaphores that is created 
+corresponds to diffrent sections of the map where two trains
+can't opperate at the same time. 
+
+Two trains are created and is our threads in this case. If a
+train crosses a sensor that is placed within a shared track the
+semaphore aquires a permit. This makes it possible for another 
+train to detect if the track is already occupied by try aquire for
+a permit. If thats the case the train will adapt by either stop or
+follow the track that switched to another lane.
 
 Placement of the sensors
 * We placed our sensors so that our trains would not derail
