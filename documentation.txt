@@ -1,58 +1,100 @@
-The program work as such that all semaphores that is created 
-corresponds to diffrent sections of the map where two trains
-can't opperate at the same time. 
+Description
 
-Two trains are created and is our threads in this case. If a
-train crosses a sensor that is placed within a shared track the
-semaphore aquires a permit. This makes it possible for another 
-train to detect if the track is already occupied by try aquire for
-a permit. If thats the case the train will adapt by either stop or
-follow the track that switched to another lane.
+	The program work as such that all semaphores that is created 
+	corresponds to diffrent sections of the map where two trains can't
+	operate at the same time. 
+
+	Two trains are created and is our threads in this case. If a train
+	crosses a sensor that is placed within a shared track the 
+	semaphore aquires a permit. This makes it possible for another 
+	train to detect if the track is already occupied by try aquire for
+	a permit. If thats the case the train will adapt by either stop or
+	follow the track that switched to another lane.
+
 
 Placement of the sensors
-* We placed our sensors so that our trains would not derail
-in high velocities but still have a good flow. This also applies
-to the switches because the train should not glide into 
-our shared tracks and collide with each other.
+
+	* We placed our sensors so that our trains would not derail in 
+	high velocities but still have a good flow. To start with, the 
+	flow was our biggest issue to maintain with our initial placement
+	of sensors. We then mentioned that there actually were a reason to
+	declare a max speed. So we then used the same distance between
+	sensors and switches in all cases. 
+
+	*At some point we needed to get a better train flow, thus we added
+	sensors right after all shared sections. That is because those
+	shared sections are the biggest thief of good train flow and the
+	smartest way to solve this is to release the shared section's
+	semaphores directly after it's available. These sensors are also
+	triggered once they are set to inactive, which is different from
+	most of the others that sets switches, acquire semaphores etc. The
+	reason behind that is simply that we don'w want a super fast train
+	colliding with a super slow train.
+
 
 Choice of critical sections
-* The two joined sections after each station were our main priority.
-Only one train can be there on a given time, thus sharedUpper and 
-sharedLower became our first semaphores. They work like an entrance 
-red light to the just mentioned sections. Those sections also contains
-a couple of sensors, one in each section, that works the switches
-connected to the to-be-entered sections. 
 
-Another critical section is the crossing section right before the 
-upper station. We had to be very precise in the placement of sensors.
-You want to have some margin but not lose out in the train flow.
+	* The two joined sections after each station were our main 
+	priority. Only one train can be there on a given time, thus 
+	sharedUpper and sharedLower became our first semaphores. They work
+	like an entrance red light to the just mentioned sections. Those
+	sections also contains a couple of sensors, one in each section,
+	that works the switches connected to the to-be-entered sections. 
+
+	*Another critical section is the crossing section right before the 
+	upper station. Or rather, it became a critical when we realized we 
+	were optimizing the program. We only had around 15 sensors running 
+	at the time we decided to close up on the max 30 mark to make the 
+	train flow smoother. It was also at this point we made our 
+	semaphores release on sensor: inactive. So at least it was a 
+	critical section for particular program. Programming with that in
+	mind made us more precise with the placement of sensors, and thus
+	the program more hard to read.
+
+	*Also, the dual track in the middle were crucial for a good train
+	flow, since it's connecting the two shared tracks. So before we
+	added the additional sensors, if the train in behind could not
+	drive pass the other, slower train.
 
 
 
 Maximum train speed and the reason for it
-* Our maximum speed is 22 because 23 is to fast for the trains to
-stop before we reach the switch. And therefore we choose 26 otherwise
-we would have a collision.
+
+	* Our maximum speed is 22 because 23 is to fast for the trains to
+	stop before we reach the switch. At first we could run the program 
+	with max speeds such as 27-28 at lower simulation speeds (for some
+	reason), we then reached the conclusion that our train flow was 
+	lacking and every max speed above 15 is okay. Therefore, we 
+	changedthe distance between the sensors down to two squares (or 
+	whichever length unit you prefer), to reach a significantly better
+	train flow. Although, our max speed was reduced to 22.
+
+
 How you tested your solution
-* We printed our available permits for each semaphore to ensure that we
-never released one too many permits. And we also created a statement
-that would exit the program if any of the semaphores had more than one
-permit available. We ran this with several diffrent configurations and
-it never collided nor did it exit.
 
-* Code that we ran for our testing
+	* To start with, we used simple speed, such as 10 10, to see if 
+	everything worked as it should. Once it ran for some time we used 
+	the Semaphore method availablePermits().
 
-if(sharedUpper.availablePermits() > 1 ||
-	sharedDual.availablePermits() > 1 ||
-	sharedLower.availablePermits() > 1 || 
-	lowerMainTrack.availablePermits() > 1 || 
-	upperMainTrack.availablePermits() > 1 || 
-	crossing.availablePermits() > 1) {
-		System.out.println("sharedupper: " + sharedUpper.availablePermits());
-		System.out.println("sharedLower: " + sharedLower.availablePermits());
-		System.out.println("sharedDual: " + sharedDual.availablePermits());
-		System.out.println("lowerMainTrack: " + lowerMainTrack.availablePermits());
-		System.out.println("upperMainTrack: " + upperMainTrack.availablePermits());
-		System.out.println("crossing: " + crossing.availablePermits());
-		System.exit(1);
-}
+	* We printed our available permits for each semaphore to ensure 
+	that we never released one too many permits. And we also created a
+	statement that would exit the program if any of the semaphores had 
+	more than one permit available. We ran this with several diffrent
+	configurations and it never collided nor did it exit.
+
+	* Code that we ran for our testing:
+
+	if(sharedUpper.availablePermits() > 1 ||
+		sharedDual.availablePermits() > 1 ||
+		sharedLower.availablePermits() > 1 || 
+		lowerMainTrack.availablePermits() > 1 || 
+		upperMainTrack.availablePermits() > 1 || 
+		crossing.availablePermits() > 1) {
+			System.out.println("sharedupper: " + sharedUpper.availablePermits());
+			System.out.println("sharedLower: " + sharedLower.availablePermits());
+			System.out.println("sharedDual: " + sharedDual.availablePermits());
+			System.out.println("lowerMainTrack: " + lowerMainTrack.availablePermits());
+			System.out.println("upperMainTrack: " + upperMainTrack.availablePermits());
+			System.out.println("crossing: " + crossing.availablePermits());
+			System.exit(1);
+	}

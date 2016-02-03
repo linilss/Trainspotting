@@ -56,7 +56,7 @@ public class Train extends Thread {
 		}
 
 	}
-	public void makeSwitch(int switchX, int switchY, boolean toLeft, 
+	public void makeSwitch(boolean toLeft, int switchX, int switchY,
 					Semaphore toRelease, boolean releaseFromLeft) {
 		try {
 				if(toLeft) {
@@ -123,6 +123,9 @@ public class Train extends Thread {
 		tsi = TSimInterface.getInstance();
 		int x;
 		int y;
+		final boolean fromRight = false;
+		final boolean fromLeft = true;
+
 		while(true) {
 			try{
 
@@ -130,6 +133,7 @@ public class Train extends Thread {
 				boolean sensorActive = e.getStatus() == 1;
 				x = e.getXpos();
 				y = e.getYpos();
+
 				if(sensorActive) {
 					switch(x){
 						case 1:
@@ -160,10 +164,10 @@ public class Train extends Thread {
 							else {
 								if(up){
 									if(sharedLower.tryAcquire()) {
-										makeSwitch(3,11,(y==11), lowerMainTrack, true);
+										makeSwitch((y==11), 3, 11, lowerMainTrack, fromLeft);
 									}
 									else {
-										waitAndSwitch(sharedLower, 3, 11, y==11, lowerMainTrack, true);
+										waitAndSwitch(sharedLower, 3, 11, y==11, lowerMainTrack, fromLeft);
 									}
 								}
 							}	 
@@ -172,10 +176,10 @@ public class Train extends Thread {
 						case 7:
 							if(!up && (y >7)) {
 								if(sharedLower.tryAcquire()) {
-									makeSwitch(4, 9, (y==9), sharedDual, true);
+									makeSwitch((y==9), 4, 9, sharedDual, fromLeft);
 								}
 								else{
-									waitAndSwitch(sharedLower, 4, 9, y==9, sharedDual, true);
+									waitAndSwitch(sharedLower, 4, 9, y==9, sharedDual, fromLeft);
 								}
 							}
 							break;
@@ -205,10 +209,10 @@ public class Train extends Thread {
 
 							if(up) {
 								if(sharedUpper.tryAcquire()){
-									makeSwitch(15,9,(y==10), sharedDual, false);
+									makeSwitch((y==10), 15, 9, sharedDual, fromRight);
 								}
 								else {
-									waitAndSwitch(sharedUpper, 15, 9, y==10, sharedDual, false);
+									waitAndSwitch(sharedUpper, 15, 9, y==10, sharedDual, fromRight);
 								}
 							}
 						break;
@@ -218,14 +222,15 @@ public class Train extends Thread {
 								if(!up) {
 									if(sharedUpper.tryAcquire()) {
 										System.out.println("woo1");
-										makeSwitch(17,7, y==8, upperMainTrack, false);
+										makeSwitch(y==8, 17, 7, upperMainTrack, fromRight);
 									}
 									else{
-										waitAndSwitch(sharedUpper, 17,7, y==8, upperMainTrack, false);
+										waitAndSwitch(sharedUpper, 17,7, y==8, upperMainTrack, fromRight);
 									}
 								}
 							}
 							break;
+
 						case 15: 
 							if(up && ((y == 3) || (y == 5))) {
 								boardStation();
